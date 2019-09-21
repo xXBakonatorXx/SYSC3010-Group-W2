@@ -8,8 +8,10 @@
 import java.net.*;
 import java.util.Scanner;
 
-public class UDPSender {
-
+public class UDPSenderVer1 {
+	
+	private final static int PACKETSIZE = 100 ;
+	
 	public static void main(String[] args) 
    {
 	      // Check the argument length
@@ -36,11 +38,21 @@ public class UDPSender {
 	         {
 	        		 //System.out.println("Enter text to be sent, ENTER to quit ");
 	        		 //message = in.nextLine();
-					 message = "Message" + String( currentN ); //Append the current message number to String message
+					 //message = "Message" + new String( currentN ); //Append the current message number to String message
+					 //System.out.println(currentN);
+					 //System.out.println(message); //For debugging
+					 message = "Message";
+					 message += String.valueOf( currentN );
 	        		 //if (message.length()==0) break; //Now redudant break condition
 	        		 byte [] data = message.getBytes() ;
 	        		 DatagramPacket packet = new DatagramPacket( data, data.length, host, port ) ;
 	        		 socket.send( packet ) ;
+					 currentN++;
+					 
+					 DatagramPacket msgAckPacket = new DatagramPacket ( new byte[PACKETSIZE], PACKETSIZE ) ;
+					 socket.receive(msgAckPacket);
+                     byte [] msgAckData = msgAckPacket.getData();
+					 System.out.println( new String(msgAckData).trim() ) ; //Print acknowledgment msg
 	         } 
 	         System.out.println ("Closing down");
 	      }
