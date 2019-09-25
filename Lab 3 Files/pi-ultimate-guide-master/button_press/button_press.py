@@ -11,5 +11,8 @@ while True: #Loop indefinitely
   if input_state == False:    #If readling is LOW, button has been pressed
     print('Button Pressed') #Display button pressed
     time.sleep(0.3) #Wait for 0.3 seconds for debouncing
+  else: # For Debugging
+    print('Not Pressed')
+    time.sleep(0.3)
 
 GPIO.cleanup(); #Clean up when exiting the program
