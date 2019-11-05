@@ -1,7 +1,7 @@
 import sqlite3
 import json
 
-class Sqlite3:
+class Open:
     def __init__(self, database):
         self.__database__ = sqlite3.connect(database)
         self.__cursor__   = self.__database__.cursor()
@@ -120,7 +120,7 @@ class Sqlite3:
         self.__database__.close()
 
 def __testSQL__():
-    db = Sqlite3("test.db")
+    db = Open("test.db")
     db.newTable("test", "name Text, value Integer")
     
     db.insert("test1", '''"d", 1''')
