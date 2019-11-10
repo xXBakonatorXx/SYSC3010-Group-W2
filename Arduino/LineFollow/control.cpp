@@ -1,21 +1,18 @@
 #include "control.h"
+//#include <iostream>
 #include <math.h>
 
 void control(double pid_output, double factor, double speed, double* motor_left, double* motor_right) {
-	int distance2axel = 3;
-
-	double angle = (double)sin(pid_output / distance2axel);
-	*motor_left = (double)speed - factor * sin(angle);
-	*motor_right = (double)speed + factor * sin(angle);
+	// adjust wheel power to steer toward line
+	*motor_left = (double)speed - factor * pid_output;
+	*motor_right = (double)speed + factor * pid_output;
 }
 
-double get_postion(double* IR_data_l) {
-	double w_sum = 0, sum = 0;
-
-	for (int i = 0; i < sizeof(IR_data_l); i++) {
-		w_sum += IR_data_l[i] * (i + 1);
-		sum += IR_data_l[i];
+double get_position(int values[], int n_sensors, double* weighted_sum, double* sum) {
+	for (int sensor = 0; sensor < n_sensors; sensor++) {
+		*weighted_sum += values[sensor] * (sensor + 1);
+		*sum += values[sensor];
 	}
 
-	return w_sum / sum;
+	return *weighted_sum / *sum;
 }
