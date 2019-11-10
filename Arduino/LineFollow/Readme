@@ -1,1 +1,1 @@
-Move control.cpp, control.h to {Arduino}\Libraries\ folder
+Move LADcontrol to {Arduino}\Libraries\ directory

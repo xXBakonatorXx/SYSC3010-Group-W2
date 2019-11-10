@@ -1,6 +1,10 @@
+#include <control.h>
+
 #include <PID_v1.h>
 #include <AFMotor.h>
-#include <control.h>
+
+#define IR_PIN 2
+#define N_SENSORS 5
 
 #define PIN0 2
 #define PIN1 3
@@ -19,13 +23,13 @@ int val2  = 0;
 int val3  = 0;
 int val4  = 0;
 
-int dir = 0;
+int ir_values[N_SENSORS];
 
 // line position
-double w_sum = 0;
-double sum   = 0;
-double  avg   = 0;
-double  pos   = 0;
+double w_sum = NULL;
+double sum   = NULL;
+double avg   = 0;
+double pos   = 0;
 double motor_l = 0;
 double motor_r = 0;
 
@@ -48,13 +52,17 @@ void setup() {
   // the value pid adjusts towards
   setpoint = 0;
 
+  for (int pin = IR_PIN; pin < IR_PIN + N_SENSORS; pin++) {
+    pinMode(pin, INPUT);
+  }
+/*
   //setup ir pins
   pinMode(PIN0, INPUT);
   pinMode(PIN1, INPUT);
   pinMode(PIN2, INPUT);
   pinMode(PIN3, INPUT);
   pinMode(PIN4, INPUT);
-
+*/
   //setup pid
   /*ladPID.SetMode(AUTOMATIC);
   ladPID.SetTunings(Kp, Ki, Kp);*/
@@ -62,12 +70,18 @@ void setup() {
 
 void loop() {
   // read ir sensors. 1 while no object, 0 while obeject (1 when line is underneath)
+  for (int sensor = 0; sensor < N_SENSORS; sensor++) {
+    ir_values[sensor] = (double)digitalRead(sensor + IR_PIN);
+  }
+/*
   val0  = (int)digitalRead(PIN0);
   val1  = (int)digitalRead(PIN1);
   val2  = (int)digitalRead(PIN2);
   val3  = (int)digitalRead(PIN3);
   val4  = (int)digitalRead(PIN4);
+*/
 
+/*
   // calculates position of line under the sensors
   w_sum = (double)(val0 * 1.0 + val1 * 2.0 + val2 * 3.0 + val3 * 4.0 + val4 * 5.0);
   sum   = (double)(val0 + val1 + val2 + val3 + val4);
@@ -77,7 +91,10 @@ void loop() {
   }
   
   avg   = (double)(w_sum / sum);
-
+*/
+  sum = 0;
+  w_sum = 0;
+  avg = get_position(ir_values, N_SENSORS, &w_sum, &sum);
   //pid work
   
   output = CENTER - avg;
