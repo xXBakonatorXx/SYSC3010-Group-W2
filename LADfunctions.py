@@ -29,16 +29,28 @@ class LAD_Functions():
         
     #Insert any number of rows from json file to sql database 
     def insert_row(jsonfile):
+        #turn json to dict
         jsonDict = json_to_dict(jsonfile)
+        #table name is just the first key in our nested dict
         tablename = jsonDict.keys()
         if (tablename = 'items'):
+            #since it's nested, we have to iterate through both dicts
+            queryList = []
             for keys, info in jsonDict:
-                query = "INSERT INTO items (name, location) VALUES ('%s', '%s')" %
                 for keys in info:
-                    info[key]
+                  queryList.append(info[keys])
+            query = "INSERT INTO items (name, location) VALUES ('%s', '%s');" % (queryList[0], queryList[1])
+            cursor.execute(query)
+            
         else if (tablename = 'locations'):
             for keys, info in jsonDict:
-                query = "INSERT INTO items (name, location) VALUES ('%s', '%s')" %
+                query = "INSERT INTO locations (name, PathA, PathB, PathC, PathD) VALUES ('%s', '%s', '%s', '%s', '%s');" %
                 for keys in info:
                     info[key] 
+                cursor.execute(query)
+
+    #to delete a row with a specific name 
+    def delete_row(tableName, name):
+        query = "DELETE FROM %s WHERE name = %s" % tableName, name 
+
 
