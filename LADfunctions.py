@@ -83,9 +83,6 @@ class LAD_Functions(self):
             cursor.commit()
             cursor.close()
 
-    
-    #
-
     #
 
     
