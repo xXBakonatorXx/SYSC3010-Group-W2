@@ -26,11 +26,12 @@ class LAD_Server(self):
         cursor = conn.cursor()
         #define query we want to make 
         query = "SELECT * FROM '%s'" % jsonDict.keys() #todo: workout how to define which table we are reading from
-        cursor.execute(query)    
+        jsonData = cursor.execute(query)    
         #close the connection
         conn.commit()
         conn.close()
-        #todo: finish this
+        
+        return jsonData # returns the formatted JSON. We can use this to send messages and other functions
         
     #Insert any number of rows from json file to sql database
     # This works for single rows, to make multiple, call it many times per entry in json dict  
