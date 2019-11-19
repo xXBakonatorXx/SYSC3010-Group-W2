@@ -5,7 +5,7 @@ import sqlite3
 
 class LAD_Functions(self):
 #This function converts a JSON file into a readable Python dictionary    
-    def json_to_dict(self, file):
+    def json_to_dict('testRead.json'):
         with open(file, 'r') as f:
             jsonDict = json.load(f) #load the file into our new dictionary
         return jsonDict
