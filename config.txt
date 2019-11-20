@@ -1,0 +1,10 @@
+edogtest1.jpg http://en.m.wikipedia.org
+edogtest2.jpg http://en.m.wikipedia.org
+qr3.png https://www.samsung.com/au/support/
+qr4.png https://www.samsung.com/au/support/
+qr5.png https://www.samsung.com/au/support/
+qr6.png https://www.samsung.com/au/support/
+qr7.png https://www.samsung.com/au/support/
+qr8.png https://www.samsung.com/au/support/
+qr9.png https://www.samsung.com/au/support/
+qr10.png https://www.samsung.com/au/support/
