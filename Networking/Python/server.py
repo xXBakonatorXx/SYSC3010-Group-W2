@@ -1,16 +1,16 @@
 from UDPSocket import Server
-from Database import Database
+from LADfunctions import LADfunctions
 import os
 
 PREFIX_LAD = "LAD"
 PREFIX_USR = "USR"
  
 # Database file
-DATABASE   = "sysc3010.db"
+DATABASE   = "test3.sqlite"
 ENCODING   = "utf-8"
 
-BRANCH     = "Branches"
-OBJECT     = "Objects"
+BRANCH     = "locations"
+OBJECT     = "items"
 
 # Codes for sending and receiving
 UPDATE     = "update"
@@ -20,11 +20,11 @@ CONTINUE   = "continue"
 EOF        = "***"
    
 if __name__ == '__main__':
-    server   = Server(1001,ENCODING)
-    database = Database(DATABASE)
+    server   = Server(510,ENCODING)
+    LADfunctions.__init__(DATABASE)
     
-    database.newTable(BRANCH, "name TEXT, pathA INTEGER, pathB TEXT, pathc TEXT, pathD TEXT")
-    database.newTable(OBJECT, "name TEXT, location TEXT")
+    database.newTable(BRANCH, "name TEXT PRIMARY KEY, PathA INTEGER, PathB TEXT, PathC TEXT, PathD TEXT")
+    database.newTable(OBJECT, "name TEXT PRIMARY KEY, location TEXT NOT NULL")
 
     while (True):
         res, addr, port = server.receive()        

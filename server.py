@@ -1,33 +1,55 @@
-###############################
-#This class serves to send messages from the server to the various ports via UDP sockets 
-class Server:
-    def __init__(self, port, encoding='utf-8'):
-        self.__port__ = port
-        self.__connections__ = list()
-        self.__encoding__ = encoding
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(('', port))
+from UDPSocket import Server
+from LADfunctions import LADfunctions
+import os
 
-    #recieve database updates from Android device
-    def recieveFromAndroid(self):
-        buf, address = self.socket.recvfrom(self.__port__)
-        addr, port = address
-        return buf.decode(self.__encoding__), addr, port
-        #todo: update database
+PREFIX_LAD = "LAD"
+PREFIX_USR = "USR"
+ 
+# Database file
+DATABASE   = "test3.sqlite"
+ENCODING   = "utf-8"
+
+BRANCH     = "locations"
+OBJECT     = "items"
+
+# Codes for sending and receiving
+UPDATE     = "update"
+INSERT	   = "insert"
+DELETE     = "delete"
+CONTINUE   = "continue"
+EOF        = "***"
+   
+if __name__ == '__main__':
+    server   = Server(510,ENCODING)
+    LADfunctions.__init__(DATABASE)
     
-    #we're hard coding which port each device is listening to and sending from 
-    def sendToLAD(self, msg, address, port = 520):
-        data = msg.encode("utf-8")
-        self.socket.sendto(data, (address, port))
-        print("Sending to address {}".format(address))
-        print("Sending: {}".format(msg)) 
-    #Send information to the android device 
-    def sendToAndroid(self, msg, address, port):
-        data = msg.encode("utf-8")
-        self.socket.sendto(data, (address, port))
-        print("Sending to address {}".format(address))
-        print("Sending: {}".format(msg)) 
+    database.newTable(BRANCH, "name TEXT PRIMARY KEY, PathA INTEGER, PathB TEXT, PathC TEXT, PathD TEXT")
+    database.newTable(OBJECT, "name TEXT PRIMARY KEY, location TEXT NOT NULL")
+
+    while (True):
+        res, addr, port = server.receive()        
+        data_list = res.split("|")
+
+        if data_list[0] == PREFIX_LAD+UPDATE:
+            #send database to lad
+            command = data_list[0]
+
+        elif data_list[0] == PREFIX_USR+INSERT:
+            #insert into database
+            command, table, values = data_list
+
+        elif data_list[0] == PREFIX_USR+UPDATE:
+            #update and entry
+            command, table, condition, values = data_list
+
+        elif data_list[0] == PREFIX_USR+DELETE:
+            #delete and entry
+            command, table, condition = data_list
+
+        elif data_list[0] == EOF:
+            #break loop
+            break 
     
-    def close(self):
-        self.socket.shutdown(1)
-        print("Connection Closed")
+    database.close()
+    server.close()
+    exit(0)

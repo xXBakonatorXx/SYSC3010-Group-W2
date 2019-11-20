@@ -1,13 +1,16 @@
 #Database functions
 #This script is designed to perform tasks on the SQLite3 database tables
 import json
-import sqlite3
-import socket 
+import sqlite3 
 import sys
+from mock import recieveData
+
 
 #Listen on Ports:
 #write to ports 
 
+def __init__(database):
+    self.db = database
 
 #This function converts a JSON file into a readable Python dictionary    
 def json_to_dict(jsonfile):
@@ -22,7 +25,7 @@ def sql_to_json(table):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     #open connection
-    conn = sqlite3.connect('test3.sqlite')
+    conn = sqlite3.connect('{db}'.format(db = database))
     cursor = conn.cursor()
     #define query we want to make 
     query = "SELECT * FROM '%s'" % jsonDict.keys() 
@@ -36,7 +39,7 @@ def sql_to_json(table):
 #Insert any number of rows from json file to sql database
 # This works for single rows, to make multiple, call it many times per entry in json dict  
 def insert_row( jsonfile): #todo: check primary key 
-    conn = sqlite3.connect('test3.sqlite')
+    conn = sqlite3.connect('{}'.format(db=database))
     cursor = conn.cursor(); 
     #turn json to dict
     jsonDict = json_to_dict(jsonfile)
@@ -66,12 +69,13 @@ def insert_row( jsonfile): #todo: check primary key
 
 
 #to delete a row with a specific name 
-def delete_row(tableName, name): #this also doesn't work 
-    conn = sqlite3.connect('test3.sqlite')
+def delete_row(tableName, name):
+    conn = sqlite3.connect('{db}'.format(db=database))
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM {tablename} WHERE name = '{rowName}';".\
-        format(tableName = tablename, rowName = name))
+        cursor.execute("DELETE FROM {tableName} WHERE name = '{criteria}'".\
+            format(tableName = tableName, criteria = name))
+    
     except:
         print("oops, something went wrong")
     finally: 
@@ -79,8 +83,7 @@ def delete_row(tableName, name): #this also doesn't work
         conn.close()
 
 def main():
-    #insert_row('testRead.json')
-    delete_row('items', 'cup')
+     recieveData(520)  
 
 if __name__ == "__main__":
     main()
