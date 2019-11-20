@@ -7,12 +7,7 @@ class Server:
         self.__encoding__ = encoding
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('', port))
-    
-    ##Do we even need this?
-    def recieveFromLAD(self):
-        buf, address = self.socket.recvfrom(self.__port__)
-        addr, port = address
-        return buf.decode(self.__encoding__), addr, port
+
     #recieve database updates from Android device
     def recieveFromAndroid(self):
         buf, address = self.socket.recvfrom(self.__port__)
@@ -26,7 +21,7 @@ class Server:
         self.socket.sendto(data, (address, port))
         print("Sending to address {}".format(address))
         print("Sending: {}".format(msg)) 
-
+    #Send information to the android device 
     def sendToAndroid(self, msg, address, port):
         data = msg.encode("utf-8")
         self.socket.sendto(data, (address, port))

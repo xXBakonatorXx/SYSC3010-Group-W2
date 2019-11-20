@@ -25,7 +25,7 @@ class LAD_Server(self):
         conn = sqlite3.connect('test3.sqlite')
         cursor = conn.cursor()
         #define query we want to make 
-        query = "SELECT * FROM '%s'" % jsonDict.keys() #todo: workout how to define which table we are reading from
+        query = "SELECT * FROM '%s'" % jsonDict.keys() 
         jsonData = cursor.execute(query)    
         #close the connection
         conn.commit()
