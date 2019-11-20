@@ -77,7 +77,8 @@ def delete_row(tableName, name):
     conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM %s WHERE name = %s;" % tableName, name)
+        cursor.execute("DELETE FROM {tableName} WHERE name = '{criteria}'".\
+            format(tableName = tableName, criteria = name))
      
     except:
         print("oops, something went wrong")
