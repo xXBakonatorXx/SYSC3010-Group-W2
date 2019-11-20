@@ -35,40 +35,29 @@ def sql_to_json(table):
     
 #Insert any number of rows from json file to sql database
 # This works for single rows, to make multiple, call it many times per entry in json dict  
-def insert_row(jsonfile): #todo: check primary key 
+def insert_row( jsonfile): #todo: check primary key 
     conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor(); 
     #turn json to dict
     jsonDict = json_to_dict(jsonfile)
     #table name is just the first key in our nested dict
-    tablename = jsonDict.keys()
+    tablename = next(iter(jsonDict))
     if tablename is None:
         raise TypeError("table not specified")
     try:
         if (tablename == 'items'):
             #since it's nested, we have to iterate through both dicts
-            queryList = []
-            for keys, info in jsonDict:
-                for keys in info:
-                    if info[keys] is None:
-                        raise TypeError("null fields not allowed")
-                    cursor.execute("SELECT COUNT(1) FROM %s WHERE unique_key = %s" % (tablename, items[keys]))
-                queryList.append(info[keys])
-            query = "INSERT INTO items (name, location) VALUES ('%s', '%s');" % (queryList[0], queryList[1])
-            cursor.execute(query)
+            for key in jsonDict.items():
+                if key is None:
+                    raise TypeError("null fields not allowed")
+            cursor.execute("INSERT INTO {tablename} ({colid}, {colname}) VALUES ('{val1}', '{val2}')".\
+            format(tablename = 'items', colid = 'name', colname = 'location', val1 = jsonDict['items']['name'], val2 = jsonDict['items']['location']))
             
-        elif (tablename == 'locations'):
-            queryList = []
-            for keys, info in jsonDict:
-                for keys in info:
-                    if info[keys] is None:
-                        raise TypeError("null fields not allowed")
-                queryList.append(info[keys])
-            for keys, info in jsonDict:
-                query = "INSERT INTO locations (name, PathA, PathB, PathC, PathD) VALUES ('%s', '%s', '%s', '%s', '%s');" % (queryList[0], queryList[1], queryList[2], queryList[3], queryList[4])
-            cursor.execute(query)
-    except NoName: 
-        raise Exception("name error")
+            
+        elif (tablename == 'locations'): #this doesn't quite work 
+            print(jsonDict['locations']['name'])
+            cursor.execute("INSERT INTO locations ({name}, {PathA}, {PathB}, PathC, PathD) VALUES ({val1}, {val2}, {val3}, {val4}, {val5})".\
+            format(name = 'name', PathA = 'PathA', PathB = 'PathB', val1 = jsonDict['locations']['name'], val2 = jsonDict['locations']['PathA'], val3 = jsonDict['locations']['PathB'], val4 = jsonDict['locations']['PathC'], val5 = jsonDict['locations']['PathD']))
     except: 
         print("Oops, something went wrong")
     finally: 
@@ -77,12 +66,12 @@ def insert_row(jsonfile): #todo: check primary key
 
 
 #to delete a row with a specific name 
-def delete_row(tableName, name):
+def delete_row(tableName, name): #this also doesn't work 
     conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor()
     try:
-        query = "DELETE FROM %s WHERE name = '%s';" % tableName, name 
-        cursor.execute(query)
+        cursor.execute("DELETE FROM {tablename} WHERE name = '{rowName}';".\
+        format(tableName = tablename, rowName = name))
     except:
         print("oops, something went wrong")
     finally: 
@@ -90,7 +79,8 @@ def delete_row(tableName, name):
         conn.close()
 
 def main():
-    delete_row("items", "plates")
+    #insert_row('testRead.json')
+    delete_row('items', 'cup')
 
 if __name__ == "__main__":
     main()
