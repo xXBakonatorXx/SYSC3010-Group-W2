@@ -73,12 +73,12 @@ def insert_row( jsonfile): #todo: check primary key
 
 
 #to delete a row with a specific name 
-def delete_row(self, tableName, name):
+def delete_row(tableName, name):
     conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor()
     try:
-        query = "DELETE FROM %s WHERE name = %s;" % tableName, name 
-        cursor.execute(query)
+        cursor.execute("DELETE FROM %s WHERE name = %s;" % tableName, name)
+     
     except:
         print("oops, something went wrong")
     finally: 
@@ -87,7 +87,7 @@ def delete_row(self, tableName, name):
 
 #
 def main():
-    insert_row("testRead.json")
+    delete_row('items', 'cup')
 
 if __name__ == "__main__":
     main()
