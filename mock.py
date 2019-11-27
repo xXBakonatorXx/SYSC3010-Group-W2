@@ -22,17 +22,13 @@ def recieveData(port):
         print("waiting for message")
         while True:
             data, addr = s.recvfrom(1024)
-            print("recieved message:", data.strip())
-            f = open(data.strip(), 'wb')
-            data, addr = s.recvfrom(buf)
+            recieved = str(data)
+            print("recieved message:", recieved)
             try:
                 while(data):
-                    f.write(data)
-                    s.settimeout(2)
-                    data, addr = s.recievefrom(1024)
+
             except timeout:
-                f.close()
-                s.close()
+
                 print("file downloaded")       
 
 def fileTransfer(fileName):

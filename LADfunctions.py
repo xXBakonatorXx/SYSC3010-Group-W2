@@ -3,14 +3,13 @@
 import json
 import sqlite3 
 import sys
-from mock import recieveData
+#from mock import recieveData
 
 
 #Listen on Ports:
 #write to ports 
 
-def __init__(database):
-    self.db = database
+
 
 #This function converts a JSON file into a readable Python dictionary    
 def json_to_dict(jsonfile):
@@ -35,34 +34,32 @@ def sql_to_json(table):
     conn.close()
     
     return jsonData # returns the formatted JSON. We can use this to send messages and other functions
+
     
-#Insert any number of rows from json file to sql database
+#Insert a row from json file to sql database
 # This works for single rows, to make multiple, call it many times per entry in json dict  
-def insert_row( jsonfile): #todo: check primary key 
-    conn = sqlite3.connect('{}'.format(db=database))
+def insert_row(jsonfile): 
+    conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor(); 
     #turn json to dict
     jsonDict = json_to_dict(jsonfile)
     #table name is just the first key in our nested dict
     tablename = next(iter(jsonDict))
-    if tablename is None:
+    if tablename is None: #we don't want null values, but we need to catch this before testing the value 
         raise TypeError("table not specified")
     try:
-        if (tablename == 'items'):
-            #since it's nested, we have to iterate through both dicts
-            for key in jsonDict.items():
+        for key in jsonDict.items():
                 if key is None:
                     raise TypeError("null fields not allowed")
+        if (tablename == 'items'):
             cursor.execute("INSERT INTO {tablename} ({colid}, {colname}) VALUES ('{val1}', '{val2}')".\
             format(tablename = 'items', colid = 'name', colname = 'location', val1 = jsonDict['items']['name'], val2 = jsonDict['items']['location']))
             
-            
-        elif (tablename == 'locations'): #this doesn't quite work 
-            print(jsonDict['locations']['name'])
-            cursor.execute("INSERT INTO locations ({name}, {PathA}, {PathB}, PathC, PathD) VALUES ({val1}, {val2}, {val3}, {val4}, {val5})".\
-            format(name = 'name', PathA = 'PathA', PathB = 'PathB', val1 = jsonDict['locations']['name'], val2 = jsonDict['locations']['PathA'], val3 = jsonDict['locations']['PathB'], val4 = jsonDict['locations']['PathC'], val5 = jsonDict['locations']['PathD']))
+        elif (tablename == 'locations'): 
+            cursor.execute("INSERT INTO locations (name, PathA, PathB, PathC, PathD) VALUES ('{val1}', '{val2}', '{val3}', '{val4}', '{val5}')".\
+            format(val1 = jsonDict['locations']['name'], val2 = jsonDict['locations']['PathA'], val3 = jsonDict['locations']['PathB'], val4 = jsonDict['locations']['PathC'], val5 = jsonDict['locations']['PathD']))
     except: 
-        print("Oops, something went wrong")
+        print('Oops, something went wrong')
     finally: 
         conn.commit()
         conn.close()
@@ -75,7 +72,6 @@ def delete_row(tableName, name):
     try:
         cursor.execute("DELETE FROM {tableName} WHERE name = '{criteria}'".\
             format(tableName = tableName, criteria = name))
-    
     except:
         print("oops, something went wrong")
     finally: 
@@ -83,7 +79,7 @@ def delete_row(tableName, name):
         conn.close()
 
 def main():
-     recieveData(520)  
+    insert_row("testRead.json")       
 
 if __name__ == "__main__":
     main()

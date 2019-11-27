@@ -1,1 +1,1 @@
-{"items": {"name": "cup", "location": "kitchen"}}
+{"locations": {"name": "kitchen", "PathA": "A", "PathB": "NULL", "PathC": "NULL", "PathD": "NULL"}}
