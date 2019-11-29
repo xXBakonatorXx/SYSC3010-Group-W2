@@ -26,9 +26,8 @@ def recieveData(port):
             print("recieved message:", recieved)
             try:
                 while(data):
-
+                    #do nothing 
             except timeout:
-
                 print("file downloaded")       
 
 def fileTransfer(fileName):
@@ -47,6 +46,7 @@ def fileTransfer(fileName):
         if(s.sendto(bytestream, addr)):
             print("sending...")
             data = f.read(buffer)
+    print(bytestream)
     s.close()
     f.close()
 
