@@ -18,22 +18,25 @@ def json_to_dict(jsonfile):
     return jsonDict
 
 #
+        
 def sql_to_json(table):
-    def dict_factory(cursor, row):
-        d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
     #open connection
-    conn = sqlite3.connect('{db}'.format(db = database))
+    conn = sqlite3.connect('{db}'.format(db = "test3.sqlite"))
     cursor = conn.cursor()
+    
+    #This makes it easier to make a dict structure in our python file 
+   
+    
     #define query we want to make 
-    query = "SELECT * FROM '%s'" % jsonDict.keys() 
-    jsonData = cursor.execute(query)    
+    query = "SELECT * FROM '%s'" % table 
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print (result)
     #close the connection
     conn.commit()
     conn.close()
     
-    return jsonData # returns the formatted JSON. We can use this to send messages and other functions
+    return result # returns the formatted JSON. We can use this to send messages and other functions
 
     
 #Insert a row from json file to sql database
@@ -79,7 +82,7 @@ def delete_row(tableName, name):
         conn.close()
 
 def main():
-    insert_row("testRead.json")       
+    sql_to_json('items')       
 
 if __name__ == "__main__":
     main()

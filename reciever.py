@@ -9,17 +9,16 @@ def recieveData(port):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.bind((HOST, recPort))
         print("waiting for message")
-        while True:
-            data, addr = s.recvfrom(1024)
-            recieved = str(data)
-            print("recieved message:", recieved)
-            try:
-                while(recieved):
-                    print("working")#do nothing
-            except:
-                print("timeout, please try again")
-            finally:
-                s.close()
-                print("connection closed")
+        data, addr = s.recvfrom(1024)
+        recieved = str(data)
+        print("recieved message:", recieved)
+        try:
+            print("working")#do nothing
+        except:
+            print("timeout, please try again")
+        finally:
+            print("connection closed")
+            s.shutdown(1)
+            s.close()
 if __name__ == '__main__':
     recieveData(510)
