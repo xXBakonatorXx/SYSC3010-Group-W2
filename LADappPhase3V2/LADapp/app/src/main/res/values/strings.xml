@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">LADapp</string>
+    <string name="action_settings">Settings</string>
+    <string name="button_forward">Forward</string>
+    <string name="button_backward">Backward</string>
+    <string name="button_stop">Stop Moving</string>
+    <string name="button_new_task">Schedule a Retrieval</string>
+    <string name="switch_enable_control">Enable Controls</string>
+    <string name="manual_drive_control">Manual Drive Control</string>
+    <string name="scheduled_tasks">Scheduled Tasks</string>
+    <string name="new_scheduled_task">New Scheduled Task</string>
+    <string name="schedule_name">Schedule Name:</string>
+    <string name="enter_tasks_item_name_here">ex: Grandma\'s Pills</string>
+    <string name="on">On:</string>
+    <string name="sunday">S</string>
+    <string name="monday">M</string>
+    <string name="tuesday">T</string>
+    <string name="wednesday">W</string>
+    <string name="thursday">T</string>
+    <string name="friday">F</string>
+    <string name="saturday">S</string>
+    <string name="atTime">\@</string>
+    <string name="timeExample">ex: 9:30AM</string>
+    <string name="edit_schedule_order">Edit Schedule Order:</string>
+    <string name="create">Create</string>
+</resources>
