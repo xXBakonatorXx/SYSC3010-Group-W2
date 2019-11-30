@@ -12,6 +12,11 @@ class Database:
         self.timestamp = 0
 
     def search(self, table, entry_name):
+        """ (str, str) -> dict
+        
+        Search the table for entry
+        """
+
         for entry in self.data[table]:
             if entry['name'] == entry_name:
                 return entry
@@ -25,8 +30,8 @@ OP_MANUAL       = 0x400 # 0100 0000 0000
 OP_AUTOMATIC    = 0x200 # 0010 0000 0000
 
 DRV_FORWARD     = 0x100 # 0001 0000 0000
-FLAG_TURN_LEFT  = 0x080 # 0000 1000 0000
-FLAG_TURN_RIGHT = 0x040 # 0000 0100 0000
+DRV_TURN_LEFT  = 0x080 # 0000 1000 0000
+DRV_TURN_RIGHT = 0x040 # 0000 0100 0000
 MOV_ARM_UP      = 0x020 # 0000 0010 0000
 MOV_ARM_DOWN    = 0x010 # 0000 0001 0000
 MOV_WST_UP      = 0x008 # 0000 0000 1000
@@ -48,15 +53,59 @@ LAD_NO_LINE     = 0x001 # 0000 0000 0010
 SERVER_ADDRESS = '127.0.0.1'
 UDP_PORT = 520
 
+LOCATION_QR_FILE = 'locationQR.jpeg'
+ITEM_QR          = 'itemQR.jpeg'
+
+LOCATION_TABLE   = 'location'
+ITEM_TABLE       = 'item'
+
 SERIAL_PORT = 'COM4'
 
 last_location = 'home'
 
 def get_turn(current_path, next_path, paths_list):
+    """ (int, int, list of str) -> int
+
+    Determines the direction the lad must turn when a QR code is found
+    
+    - paths_list    :   is a list of paths connecting to the intersection (paths from location table)
+    - current_path  :   the index to the path the lad just came down, referances paths_list
+    - next_path     :   the index to the path the lad must go down, referances paths_list
+
+    paths_list = ["A", "B", "C", "D"]
+      B
+    A-|-C
+      D
+
+    <<<outputs>>>
+    (-2)    :   turn around and take the same path your on
+    (-1)    :   turn left
+    (0)     :   go straight
+    (1)     :   turn right
+
+    >>> paths_list = ["a", "b", "c", "d"]
+    >>> current_path = "a"
+    >>> next_path = "b"
+    >>> get_turn(current_path, next_path, paths_list)
+    -1
+
+    >>> paths_list = ["a", "b", "c", "d"]
+    >>> current_path = "b"
+    >>> next_path = "a"
+    >>> get_turn(current_path, next_path, paths_list)
+    1
+
+    >>> paths_list = ["a", "b", "c", "d"]
+    >>> current_path = "a"
+    >>> next_path = "c"
+    >>> get_turn(current_path, next_path, paths_list)
+    0
+    """
+
     current_idx = paths_list.index(current_path)
     next_idx    = paths_list.index(next_path)
 
-    if (next >= curr):
+    if (next_idx >= current_idx):
         turn = numpy.log2(2**next_idx//2**current_idx)
     else:
         turn = (-numpy.log2(2**current_idx//2**next_idx) + 2**2)
@@ -64,34 +113,63 @@ def get_turn(current_path, next_path, paths_list):
     return int(turn - 2)
 
 def decode_server(server_data):
+    """ (str)->(dict, int, string)
+    
+    Decodes data sent from server returns dictionary if json data is sent 
+    or string if string is sent, or int if integer is sent 
+
+    >>> decode_server('{"location": [{"name": "A", "pathA": "N"}, {"name": "B", "pathA": "N"}, {"name": "C", "pathA": "N"}, {"name": "D", "pathA": "N"}], "object": [{"name": "A", "location": "A"}, {"name": "B", "location": "B"}, {"name": "C", "location": "C"}, {"name": "D", "location": "D"}]}')
+    {
+        "location":[
+            {"name": "A", "pathA": "N"},
+            {"name": "B", "pathA": "N"},
+            {"name": "C", "pathA": "N"}
+        ]
+        "items":[
+            {"name": "A", "location": "A"},
+            {"name": "B", "location": "B"},
+            {"name": "C", "location": "C"},
+            {"name": "D", "location": "D"}
+        ]
+    }
+
+    >>> decode_server('item')
+    'item'
+
+    >>> decode_server(123)
+    123
+    """
+
     print("decoding server data {}".format(server_data))
     database_dict = dict()
     print("Trying to decode as json...")
-    database_dict = json.loads(server_data)
-
     try:
-        keys = database_dict.keys()
-        return database_dict
+        database_dict = json.loads(server_data)
     except:
-        return int(database_dict)
+        print("Decoding as string")
+        return server_data
 
-def decode_arduino(camera, database, arduino_op_code, command_list, command_idx):
+    return database_dict
+
+
+def decode_arduino(camera, database, arduino_op_code, next_location):
+    """ (camera obj, dict, int, int, list, int) -> int
+
+    decodes the opcode from the arduino and performs some operations.
+
+    """
     return_code = OP_AUTOMATIC
-
-    next_location = command_list[command_idx]
 
     if (arduino_op_code & OP_AUTOMATIC):
 
         if (arduino_op_code & LAD_SCAN_QR):
             # stop and take pic
-            filename = 'locationQR.jpeg'
-            tablename = 'location'
-            camera.capture('1280x720',filename,banner=False)
-            img = camera.load(filename)
+            camera.capture('1280x720',LOCATION_QR_FILE,banner=False)
+            img = camera.load(LOCATION_QR_FILE)
 
             #assuming 1 qr code for now
             qr_code = camera.decode(img)[0]
-            entry = database.search(tablename, qr_code.data.decode())
+            entry = database.search(LOCATION_TABLE, qr_code.data.decode())
             
             if entry == None:
                 return -1
@@ -150,16 +228,21 @@ def decode_arduino(camera, database, arduino_op_code, command_list, command_idx)
             # fallen off line
             return_code |= LAD_NO_LINE
 
-        elif (arduino_op_code & LAD_ALL_LINE):
-            # all sensors see a line
-            return_code |= LAD_ALL_LINE
+    elif (arduino_op_code & OP_MANUAL):
+        # decode manual codes here.
+
+        """
+        ERDEM
+        CODE
+        HERE
+        
+        """
         
     return return_code
 
-def encode_arduino(ser):
+def encode_arduino(ser, op_code):
     print("encoding arduino command")
-    arduino_cmd = 0x0
-    ser.write(arduino_cmd)
+    ser.write(op_code)
 
 if __name__ == "__main__":
     ser = serial.Serial(port=SERIAL_PORT,baudrate='9600')
@@ -169,8 +252,9 @@ if __name__ == "__main__":
     database = Database()
     res = OP_AUTOMATIC
 
-    server_data = str(OP_AUTOMATIC)
-    #server_data = str(OP_MANUAL)
+    #server_data = "item_name"
+    #server_data = str(OP_AUTOMATIC)
+    server_data = str(OP_MANUAL)
     #server_data = '{"location": [{"name": "A", "pathA": "N"}, {"name": "B", "pathA": "N"}, {"name": "C", "pathA": "N"}, {"name": "D", "pathA": "N"}], "object": [{"name": "A", "location": "A"}, {"name": "B", "location": "B"}, {"name": "C", "location": "C"}, {"name": "D", "location": "D"}]}'
 
     time.sleep(2)
@@ -183,16 +267,27 @@ if __name__ == "__main__":
         # decode server data
         data = decode_server(server_data)   
         
-        if type(data) == type(dict()):
+        if (type(data) == type(dict())):
             # update database cache
             database.data = data
             database.timestamp = int(time.time())
             print("ts: {}, data keys: {}".format(database.timestamp, database.data.keys()))
-        else:
+        elif (type(data) == type(str())):
+            print("referance database")
+            #referance data base here
+
+            """
+                ERDEM 
+                CODE
+                HERE
+
+            """
+
+        elif (type(data) == type(int())):
             # encode arduino command
             if (data & OP_MANUAL):
                 #send manual command
-                encode_arduino(ser)
+                encode_arduino(ser, 0x00)
                 print("op code", hex(data))
             elif (data & OP_AUTOMATIC):
                 # control loop send/receive
@@ -204,7 +299,7 @@ if __name__ == "__main__":
                 arduino_op_code = ser.read_until(b'\n')
 
                 #decode
-                res = decode_arduino(cap, database, arduino_op_code, ['home'], 0)
+                res = decode_arduino(cap, database, arduino_op_code, 'home')
                 
                 #send response
                 x = 0
