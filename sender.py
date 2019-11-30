@@ -16,29 +16,26 @@ import select
 HOST = '127.0.0.1'
 
     
+import socket, sys, time
 
-def fileTransfer(fileName):
-    s =  socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    port = 520
-    buffer = 1024
-    addr = (HOST, port)
+host = sys.argv[1]
+textport = sys.argv[2]
 
-    file_name = fileName
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+port = int(textport)
+server_address = (host, port)
 
-    f = open(file_name, 'r')
-    data = f.read(buffer)
-    bytestream = bytearray()
-    bytestream.extend(map(ord, data))
-    while(data):
-        if(s.sendto(bytestream, addr)):
-            print("sending...")
-            data = f.read(buffer)
-    print(bytestream)
-    s.close()
-    f.close()
+while 1:
+    print ("Enter data to transmit: ENTER to quit")
+    data = sys.stdin.readline().strip()
+    if not len(data):
+        break
+#    s.sendall(data.encode('utf-8'))
+    s.sendto(data.encode('utf-8'), server_address)
 
-if __name__ == '__main__':
-    fileTransfer('test3.json')
+s.shutdown(1)
+
+
     
 
 

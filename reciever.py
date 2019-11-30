@@ -14,10 +14,12 @@ def recieveData(port):
             recieved = str(data)
             print("recieved message:", recieved)
             try:
-                while(data):
-                    #do nothing 
-            except timeout:
-                print("file downloaded")   
-
+                while(recieved):
+                    print("working")#do nothing
+            except:
+                print("timeout, please try again")
+            finally:
+                s.close()
+                print("connection closed")
 if __name__ == '__main__':
-    recieveData(520)
+    recieveData(510)
