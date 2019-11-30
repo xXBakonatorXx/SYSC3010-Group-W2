@@ -1,10 +1,10 @@
 package com.example.ladapp;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothSocket;
+import java.net.*;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,71 +17,43 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-//import com.google.android.material.snackbar.Snackbar;
-
-import java.io.IOException;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * MainActivity is the default Activity of the App.
- * It is responsible for the initialization, action,
- * event handling, and backend elements that make up
- * the "Home Screen".
- *
- * @since October 19th, 2019
- * @author Brannon M. Chan (#101045946)
- * @version 3.3
- */
+//public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 public class MainActivity extends AppCompatActivity {
-
-    //Add in Bluetooth Connectivity for Testing:
-    BluetoothAdapter mtAdaprter;
-    BluetoothSocket btSocket;
 
     //Define UI Elements:
     private Switch enableSw;
     private Button btnS, btnF, btnB;
     private Spinner taskSpinner;
     private RecyclerView itemList;
-
-    //To get it to compile w/o implementing Adapter
-    private RecyclerView.Adapter itemLocAdapter;
+    private RecyclerView.Adapter itemLocAdapter; //To get it to compile w/o implementing Adapter
     private RecyclerView.LayoutManager layoutManager;
     private String taskSearchKey;
-
     //Temporary Bogus Database data string arrays:
     private static final String[] tasks1 = {"Pills", "Thermometer", "TV Remote", "Ipad",
             "Phone", "House Keys"};
     private static final String[] item1 = {"HOME", "Node A", "Living Room", "Node C",
             "Kitchen", "Office", "Corridor", "HOME"};
-
     //Temp Bogus Cursor:
     //private Cursor databaseTasks, fetchTask;
 
-    /**
-     * Method onCreate is called upon the creation of MainActivity,
-     * this method acts as this Class's constructor, as it
-     * initializes & instantiates all of MainActivity's Objects,
-     * and sets all UI Event Listeners.
-     *
-     * @param savedInstanceState the Bundle Object containing its
-     *                           last saved instance state.
-     */
+    private String serverIP = "192.168.0.46";
+    private DatagramSocket socket;
+
+    private int serverPort = 510;
+    private final int PACKETSIZE = 100;
+    private InetAddress serverAddress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //Setup BT connection:
-        try{
-            setupBT();
-        } catch (IOException e){
-            dispToast(e.toString());
-        }
         //Initialize UI Elements:
         btnS = findViewById(R.id.btnStop);
         btnF = findViewById(R.id.btnForward);
@@ -123,12 +95,12 @@ public class MainActivity extends AppCompatActivity {
 
         //Initially disable Manual Control UI Elements & Switch:
         enableSw.setChecked(false);
-        setEnableManualControls(false);
+        enableManualControls(false);
         //Respond to switch being flipped:
         enableSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setEnableManualControls(isChecked);
+                enableManualControls(isChecked);
             }
         });
         //Respond to Emergency Stop being pressed:
@@ -136,13 +108,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 enableSw.setChecked(false);
-                setEnableManualControls(false);
+                enableManualControls(false);
                 //Send the Emergency Stop Command to the Server
-                try {
-                    emergencyStop();
-                } catch (IOException e){
-                    dispToast(e.toString());
-                }
+                //Asdf...
             }
         });
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -158,121 +126,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Method dispToast is a debugging method
-     * used to output certain messages being
-     * tested by the developer, or to output
-     * error messages and exceptions to the
-     * screen.
-     *
-     * @param message the String object to be
-     *                displayed on the UI.
-     */
-    public void dispToast(String message){
-        //Initiate Toast with Exception Msg:
-        Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
-        toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
-        toast.show(); //Display the exception msg
-    }
-
-    /**
-     * Method setupBT is called to set up Bluetooth
-     * functionality & connection on the User's phone.
-     *
-     * @throws IOException the Exception Object thrown due to
-     *                     a Bluetooth Network error.
-     */
-    public void setupBT() throws IOException{
-    }
-
-    /**
-     * Method createNewTask is called when the User taps
-     * the "New Scheduled Task" UI Button. This cause a new
-     * activity (from "CreateNewTask.Java") to Start.
-     *
-     * @param view the FloatingActionButton View Object that
-     *             corresponds to the "+" symbol UI button.
-     */
+    //Handle Call when the user taps the "New Scheduled Task" Button
     public void createNewTask(View view){
         Intent intent = new Intent(this, CreateTaskActivity.class);
         //add stuff here if you need to pull data from the main activity
         startActivity(intent);
     }
 
-    /**
-     * Method driveForward is called upon the Uer tapping
-     * or holding the "Forward" drive button on the UI.
-     * This will send the "Drive Forward" command to the
-     * LAD Unit Via the Central Server.
-     *
-     * @param view the Button View Object corresponding to
-     *             the "FORWARD" UI Button.
-     * @throws IOException the Exception Object thrown
-     *                     due to a network error.
-     */
-    public void driveForward(View view) throws IOException {
+    public void driveForward(View view){
         //Send the drive forwards command to the server.
-        String fwdMsg = "Test Message Drive Forward\n";
-        //btOutputStream.write(fwdMsg.getBytes());
-        dispToast(fwdMsg);
+        sendCommand("manual:goForward");
     }
 
-    /**
-     *Method driveBackward is called upon the Uer tapping
-     * or holding the "Backward" drive button on the UI.
-     * This will send the "Drive Backward" command to the
-     * LAD Unit Via the Central Server.
-     * @param view the Button View Object corresponding to
-     *             the "BACKWARD" UI Button.
-     * @throws IOException the Exception Object thrown due
-     *                     to a network error.
-     */
-    public void driveBackward(View view) throws IOException {
+    public void driveBackward(View view){
         //Send the drive backwards command to the server.
-        String bckMsg = "Test Message Drive Backward\n";
-        //btOutputStream.write(bckMsg.getBytes());
-        dispToast(bckMsg);
+        sendCommand("manual:goBackward");
     }
 
-    /**
-     * Method emergencyStop() is called when the User
-     * taps the "Stop Moving" drive button in the UI.
-     * This will send a "Halt" message to the LAD Unit
-     * via Central Server.
-     * @throws IOException the Exception Object thrown
-     *                     due to a network error.
-     */
-    public void emergencyStop() throws IOException {
-        //Send the emergency stop command to the LAD
-        String stopMsg = "Test Message Halt Driving\n";
-        //btOutputStream.write(stopMsg.getBytes());
-        dispToast(stopMsg);
+    public void stopDriving(View view) {
+        //Send the stop driving command to the server.
+        sendCommand("manual:stop");
     }
 
-    /**
-     * Method setEnableManualControls is used to enable or
-     * disable the FORWARD, BACKWARD, and STOP MOVING
-     * UI Button Elements as a redundant safety feature
-     * when the STOP MOVING Button is tapped/pressed.
-     * @param changeTo the Boolean value to set Manual Drive
-     *                 Control Buttons to.
-     */
-    public void setEnableManualControls(Boolean changeTo){
+    public void fetchItem(String item) {
+        sendCommand("item:" + item);
+    }
+
+    public boolean sendCommand(String msg) {
+        try {
+            serverAddress = InetAddress.getByName(serverIP);
+            this.socket = new DatagramSocket();
+            byte [] data = msg.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, serverAddress, this.serverPort);
+            this.socket.send(packet);
+            return true;
+        } catch(Exception e) {
+            Context context = getApplicationContext();
+            CharSequence toastText = (CharSequence)e;
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, toastText, duration);
+            toast.show();
+            return false;
+        }
+    }
+
+    public void testfun(){
+        //blablabla
+    }
+
+    public void enableManualControls(Boolean changeTo){
         //Enables all 3 Control UI Buttons
         btnB.setEnabled(changeTo);
         btnF.setEnabled(changeTo);
         btnS.setEnabled(changeTo);
     }
 
-    /**
-     * Method onCreateOptionsMenu was an autogenerated
-     * event handling method that handles the default
-     * "Settings" menu feature.
-     * Consider DEPRECATING.
-     *
-     * @param menu the corresponding Menu Object
-     * @return Always returns true.
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -280,16 +188,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /**
-     * Method onOptionsItemSelected was an autogenerated
-     * even handling method that handles the default
-     * "Settings" Menu feature.
-     * Consider DEPRECATING.
-     *
-     * @param item the MenuItem Object
-     * @return true - If item's id matches
-     *                "...action_settings".
-     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
