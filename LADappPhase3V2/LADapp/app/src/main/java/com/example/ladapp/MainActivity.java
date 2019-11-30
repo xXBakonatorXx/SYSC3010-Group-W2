@@ -170,10 +170,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void testfun(){
-        //blablabla
-    }
-
     public void enableManualControls(Boolean changeTo){
         //Enables all 3 Control UI Buttons
         btnB.setEnabled(changeTo);

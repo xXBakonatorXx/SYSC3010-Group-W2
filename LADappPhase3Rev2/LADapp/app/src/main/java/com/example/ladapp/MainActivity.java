@@ -2,6 +2,7 @@ package com.example.ladapp;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -20,6 +21,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 //import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -34,7 +38,8 @@ import androidx.recyclerview.widget.RecyclerView;
  *
  * @since October 19th, 2019
  * @author Brannon M. Chan (#101045946)
- * @version 3.3
+ * @author Erdem Yanikomeroglu (#101080085)
+ * @version 3.4
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +63,20 @@ public class MainActivity extends AppCompatActivity {
             "Phone", "House Keys"};
     private static final String[] item1 = {"HOME", "Node A", "Living Room", "Node C",
             "Kitchen", "Office", "Corridor", "HOME"};
+
+    //Define Manual Drive Command String Constants:
+    private String fwdMsg = "manual:goForward";
+    private String bckMsg = "manual:goBackward";
+    private String stopMsg = "manual:stop";
+
+    //Define Android Networking Capability:
+    private String serverIP = "192.168.0.46";
+    private DatagramSocket socket;
+
+    //Define Network Parameters:
+    private int serverPort = 510;
+    private final int PACKETSIZE = 100;
+    private InetAddress serverAddress;
 
     //Temp Bogus Cursor:
     //private Cursor databaseTasks, fetchTask;
@@ -212,8 +231,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void driveForward(View view) throws IOException {
         //Send the drive forwards command to the server.
-        String fwdMsg = "Test Message Drive Forward\n";
-        //btOutputStream.write(fwdMsg.getBytes());
+        sendCommand(fwdMsg);
         dispToast(fwdMsg);
     }
 
@@ -229,8 +247,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void driveBackward(View view) throws IOException {
         //Send the drive backwards command to the server.
-        String bckMsg = "Test Message Drive Backward\n";
-        //btOutputStream.write(bckMsg.getBytes());
+        sendCommand(bckMsg);
         dispToast(bckMsg);
     }
 
@@ -244,9 +261,47 @@ public class MainActivity extends AppCompatActivity {
      */
     public void emergencyStop() throws IOException {
         //Send the emergency stop command to the LAD
-        String stopMsg = "Test Message Halt Driving\n";
-        //btOutputStream.write(stopMsg.getBytes());
+        sendCommand(stopMsg);
         dispToast(stopMsg);
+    }
+
+    /**
+     * Method fetchItem() is called when the User
+     * taps the "Fetch" drive button in the UI.
+     * This will send a "Fetch Item" message to the LAD Unit
+     * via Central Server.
+     * NOTE: This method may be depricated and is for dev use only.
+     * @throws IOException the Exception Object thrown
+     *                     due to a network error.
+     */
+    public void fetchItem(String item) throws IOException{ //Implements IOException?
+        //Send fetch command to the LAD
+        String fetchMsg = "item:" + item;
+        sendCommand(fetchMsg);
+        dispToast(fetchMsg);
+    }
+
+    /**
+     * Method sendCommand takes the text or
+     * exception error message given to it as input
+     * and sends the command via Wireless UDP to
+     * the Central Server.
+     * @param msg the String Command to send to server.
+     * @throws IOException the Exception Object thrown
+     *                     due to a network error.
+     */
+    public void sendCommand(String msg) throws IOException{
+        try {
+            serverAddress = InetAddress.getByName(serverIP);
+            this.socket = new DatagramSocket();
+            byte [] data = msg.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, serverAddress, this.serverPort);
+            this.socket.send(packet);
+            //return true;
+        } catch(Exception e) {
+            dispToast(e.toString());
+            //return false;
+        }
     }
 
     /**
