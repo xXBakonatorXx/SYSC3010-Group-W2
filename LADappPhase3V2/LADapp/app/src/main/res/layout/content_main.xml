@@ -32,7 +32,6 @@
         android:layout_marginEnd="28dp"
         android:backgroundTint="#AEF44336"
         android:hapticFeedbackEnabled="true"
-        android:onClick="stopDriving"
         android:text="@string/button_stop"
         android:tooltipText="Sends the LAD an Emergency stop command. NOTE: Manual Drive is set to disabled after use."
         android:visibility="visible"
