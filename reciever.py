@@ -20,5 +20,6 @@ def recieveData(port):
             print("connection closed")
             s.shutdown(1)
             s.close()
+            
 if __name__ == '__main__':
     recieveData(510)
