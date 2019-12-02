@@ -1,6 +1,18 @@
+"""
+
+Main LAD unit Raspberry Pi code.
+
+developed by:
+        Zachary Porter      : 101069001
+        Erdem Yanikomeroglu : _________
+
+Project Group : W2
+
+"""
 import ImageCapture
 import UDPSocket
 import keyboard
+import socket
 import serial
 import numpy
 import json
@@ -52,16 +64,26 @@ LAD_NO_LINE     = 0x001 # 0000 0000 0010
 
 SERVER_ADDRESS = '127.0.0.1'
 UDP_PORT = 520
+UDP_ENCODING = 'utf-8'
+UDP_TIMEOUT = 1
 
+# files to store camera image in
 LOCATION_QR_FILE = 'locationQR.jpeg'
 ITEM_QR          = 'itemQR.jpeg'
 
+# table names
 LOCATION_TABLE   = 'location'
 ITEM_TABLE       = 'item'
 
+# used to communicate with the arduino
+# brannon set up comms between arduino and pi,
+# he might remember the port to use.
 SERIAL_PORT = 'COM4'
 
+# used to store where lad came from (last_location)
+# and next location (next_location)
 last_location = 'home'
+next_location = None
 
 def get_turn(current_path, next_path, paths_list):
     """ (int, int, list of str) -> int
@@ -244,14 +266,18 @@ def encode_arduino(ser, op_code):
     print("encoding arduino command")
     ser.write(op_code)
 
-if __name__ == "__main__":
-    ser = serial.Serial(port=SERIAL_PORT,baudrate='9600')
-    client = UDPSocket.Client(SERVER_ADDRESS, UDP_PORT)
-    cap = ImageCapture.FsWebCam()
 
+# main funciton
+if __name__ == "__main__":
+    #setup serial, udp client, camera, and database
+    ser = serial.Serial(port=SERIAL_PORT,baudrate='9600')
+    client = UDPSocket.Client(SERVER_ADDRESS, UDP_PORT, UDP_ENCODING, UDP_TIMEOUT)
+    cap = ImageCapture.FsWebCam()
     database = Database()
+    
     res = OP_AUTOMATIC
 
+    """ default values of server data, used to test diferent cases rn. will be over written by data read from server """
     #server_data = "item_name"
     #server_data = str(OP_AUTOMATIC)
     server_data = str(OP_MANUAL)
@@ -263,6 +289,9 @@ if __name__ == "__main__":
     while (not keyboard.is_pressed('esc')):
         # read from data base
         #server_data = client.receive()
+
+        # read from server, if no new data after 1 sec the socket times out and server_data stays as its previous value.
+        server_data = client.receive()
 
         # decode server data
         data = decode_server(server_data)   
