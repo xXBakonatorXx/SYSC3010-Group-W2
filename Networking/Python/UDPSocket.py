@@ -6,13 +6,14 @@ import time
 
 
 class Server:
-    def __init__(self, port=8888, encoding='utf-8'):
+    def __init__(self, port=8888, encoding='utf-8', timeout=None):
         self.__port__        = port
         self.__connections__ = list()
         self.__encoding__    = encoding
         self.socket          = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
         self.socket.bind(('', port))
+        self.socket.settimeout(timeout)
         print("Server is listening on port {}".format(port))
 
     def receive(self):
@@ -46,16 +47,17 @@ class Server:
 
         Closes connection
         """
-        self.socket.shutdown(1)
+        self.socket.close()
         print("Connection closed")
 
 class Client:
-    def __init__(self, address='127.0.0.1', port=8888, encoding='utf-8'):
+    def __init__(self, address='127.0.0.1', port=8888, encoding='utf-8', timeout=None):
         self.__address__  = address
         self.__port__     = port
         self.__encoding__ = encoding 
         self.socket       = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-       
+        
+        self.socket.settimeout(timeout)
         print("Client ready to send data to {} on port {}".format(address, port))
 
     def receive(self):
@@ -108,7 +110,7 @@ class Client:
 
         Closes connection
         """
-        self.socket.shutdown(1)
+        self.socket.close()
         print("Connection closed")
 
 def __testServer__(address, port):
@@ -131,7 +133,18 @@ def __testAll__(address, port):
     s.close()
 
 if __name__ == "__main__":
-    address, port = "127.0.0.1", 1001
-    #__testServer__(port)
-    #__testClient__(address, port)
-    __testAll__(address, port)
+    s = Server(port=9999, timeout=2)
+    c = Client('127.0.0.1', port=999, timeout=2)
+
+    data = ''
+    try:
+        c.send('sent data')
+        time.sleep(0.5)
+        data = s.receive()
+    except Exception as e:
+        data = 'No Data'
+    
+
+    print(data)
+    s.close()
+    c.close()
