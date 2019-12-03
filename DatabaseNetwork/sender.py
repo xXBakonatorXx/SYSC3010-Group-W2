@@ -22,6 +22,8 @@ import sqlite3
 #command is a key, and table is a value of command, and also a key for nested dict of args
 #example: {"delete": "items": {"name": "plate", "location": "kitchen"}}
 
+#server.py functions get called as needed, hence the open and close of each port as theyre needed
+
 HOST = '127.0.0.1'  
 
 
@@ -39,6 +41,9 @@ datastring = str(data)
 bytearr = bytearray(datastring, "utf-8")
 s.sendto(bytearr, server_address)
 
+#todo:-get addresses of pi and android
+#todo: -get ports
+#todo: set up call function for to_android and to_LAD
 s.close()
 
 
