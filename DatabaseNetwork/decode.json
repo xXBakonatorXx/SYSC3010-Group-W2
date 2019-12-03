@@ -1,6 +1,1 @@
-{"delete": 
-	{"items": 
-		{"name": "plate", 
-		"location": "kitchen"}
-	}
-}
+{"delete": {"items": {"name": "plate", "location": "kitchen"}}}
