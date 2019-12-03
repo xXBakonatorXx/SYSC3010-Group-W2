@@ -150,7 +150,7 @@
         app:layout_constraintTop_toBottomOf="@+id/taskList" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/newSchedTaskText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -161,5 +161,31 @@
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/floatingActionButton" />
+
+    <TextView
+        android:id="@+id/cmdStatusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:text="@string/commandStatus"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnForward" />
+
+    <TextView
+        android:id="@+id/commandStatusFieldText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:textStyle="normal"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/cmdStatusText"
+        app:layout_constraintTop_toBottomOf="@+id/btnBackward" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

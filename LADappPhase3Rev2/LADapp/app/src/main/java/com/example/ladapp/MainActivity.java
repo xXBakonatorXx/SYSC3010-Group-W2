@@ -1,9 +1,7 @@
 package com.example.ladapp;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
@@ -15,10 +13,10 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-//import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -39,24 +37,24 @@ import androidx.recyclerview.widget.RecyclerView;
  * @since October 19th, 2019
  * @author Brannon M. Chan (#101045946)
  * @author Erdem Yanikomeroglu (#101080085)
- * @version 3.4
+ * @version 3.5
  */
 public class MainActivity extends AppCompatActivity {
-
-    //Add in Bluetooth Connectivity for Testing:
-    BluetoothAdapter mtAdaprter;
-    BluetoothSocket btSocket;
 
     //Define UI Elements:
     private Switch enableSw;
     private Button btnS, btnF, btnB;
     private Spinner taskSpinner;
     private RecyclerView itemList;
+    private TextView commandStatusLabel;
 
     //To get it to compile w/o implementing Adapter
     private RecyclerView.Adapter itemLocAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private String taskSearchKey;
+
+    //Save Emergency Button State before entering Asynctask thread:
+    private boolean prevEmergButtonState;
 
     //Temporary Bogus Database data string arrays:
     private static final String[] tasks1 = {"Pills", "Thermometer", "TV Remote", "Ipad",
@@ -65,18 +63,9 @@ public class MainActivity extends AppCompatActivity {
             "Kitchen", "Office", "Corridor", "HOME"};
 
     //Define Manual Drive Command String Constants:
-    private String fwdMsg = "manual:goForward";
-    private String bckMsg = "manual:goBackward";
-    private String stopMsg = "manual:stop";
-
-    //Define Android Networking Capability:
-    private String serverIP = "192.168.0.46";
-    private DatagramSocket socket;
-
-    //Define Network Parameters:
-    private int serverPort = 510;
-    private final int PACKETSIZE = 100;
-    private InetAddress serverAddress;
+    private final String fwdMsg = "manual:goForward";
+    private final String bckMsg = "manual:goBackward";
+    private final String stopMsg = "manual:stop";
 
     //Temp Bogus Cursor:
     //private Cursor databaseTasks, fetchTask;
@@ -95,17 +84,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Setup BT connection:
-        try{
-            setupBT();
-        } catch (IOException e){
-            dispToast(e.toString());
-        }
         //Initialize UI Elements:
         btnS = findViewById(R.id.btnStop);
         btnF = findViewById(R.id.btnForward);
         btnB = findViewById(R.id.btnBackward);
         enableSw = findViewById(R.id.enableSwitch);
+        commandStatusLabel = findViewById(R.id.commandStatusFieldText);
 
         taskSpinner = findViewById(R.id.taskList);
         itemList = findViewById(R.id.itemLocList);
@@ -140,13 +124,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Initially disable Manual Control UI Elements & Switch:
+        //Initially disable Manual Control UI Elements, Status & Switch:
         enableSw.setChecked(false);
         setEnableManualControls(false);
+        commandStatusLabel.setText(getResources().getText(R.string.commandStatusIdle));
         //Respond to switch being flipped:
         enableSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prevEmergButtonState = isChecked; //Save enable switch state for AsyncTask Thread
                 setEnableManualControls(isChecked);
             }
         });
@@ -170,8 +156,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
                 createNewTask(view); //Invoke start of createTask Activity
             }
         });
@@ -219,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Method driveForward is called upon the Uer tapping
+     * Method driveForward is called upon the User tapping
      * or holding the "Forward" drive button on the UI.
      * This will send the "Drive Forward" command to the
      * LAD Unit Via the Central Server.
@@ -232,11 +216,11 @@ public class MainActivity extends AppCompatActivity {
     public void driveForward(View view) throws IOException {
         //Send the drive forwards command to the server.
         sendCommand(fwdMsg);
-        dispToast(fwdMsg);
+        //dispToast(fwdMsg);
     }
 
     /**
-     *Method driveBackward is called upon the Uer tapping
+     *Method driveBackward is called upon the User tapping
      * or holding the "Backward" drive button on the UI.
      * This will send the "Drive Backward" command to the
      * LAD Unit Via the Central Server.
@@ -248,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
     public void driveBackward(View view) throws IOException {
         //Send the drive backwards command to the server.
         sendCommand(bckMsg);
-        dispToast(bckMsg);
+        //dispToast(bckMsg);
     }
 
     /**
@@ -262,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
     public void emergencyStop() throws IOException {
         //Send the emergency stop command to the LAD
         sendCommand(stopMsg);
-        dispToast(stopMsg);
+        //dispToast(stopMsg);
     }
 
     /**
@@ -278,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
         //Send fetch command to the LAD
         String fetchMsg = "item:" + item;
         sendCommand(fetchMsg);
-        dispToast(fetchMsg);
+        //dispToast(fetchMsg);
     }
 
     /**
@@ -292,15 +276,13 @@ public class MainActivity extends AppCompatActivity {
      */
     public void sendCommand(String msg) throws IOException{
         try {
-            serverAddress = InetAddress.getByName(serverIP);
-            this.socket = new DatagramSocket();
-            byte [] data = msg.getBytes();
-            DatagramPacket packet = new DatagramPacket(data, data.length, serverAddress, this.serverPort);
-            this.socket.send(packet);
-            //return true;
+            //Attempt sending the given command:
+            new NetworkingAsyncTask().execute(msg);
+            //Set the command status back to Idle message:
+            commandStatusLabel.setText(getResources().getText(R.string.commandStatusIdle));
         } catch(Exception e) {
+            e.printStackTrace();
             dispToast(e.toString());
-            //return false;
         }
     }
 
@@ -358,5 +340,69 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //Class to handle networking thread
+    //Implement the AsyncTask class for networking functionality:
+    private class NetworkingAsyncTask extends AsyncTask<String, String, String> {
+
+        //Define Android Networking Capability:
+        private DatagramSocket UDPsocket;
+        private DatagramPacket UDPpacket;
+
+        //Define Network Parameters:
+        //private int serverPort = 510;
+        private final int serverPort = 8888;
+        //private final int PACKETSIZE = 100;
+        //private final String serverIP = "192.168.0.46";
+        private final String serverIP = "192.168.43.110";
+        private InetAddress serverAddress;
+        private byte [] data;
+        private String commMsg, result;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Show the user is sending the command and disable send functions until completed:
+            commandStatusLabel.setText(getResources().getText(R.string.commandStatusPreExec));
+            setEnableManualControls(false);
+        }
+
+        @Override
+        protected String doInBackground(String... param) {
+            //Show the user this new status
+            commMsg = param[0]; //Assuming this is how you get the sendCommand Input
+            result = "p"; //Init the result from Asynctask
+            try { //Ported over from method sendCommand
+                //Set server IP
+                serverAddress = InetAddress.getByName(serverIP);
+                UDPsocket = new DatagramSocket();
+                data = commMsg.getBytes();
+                UDPpacket = new DatagramPacket(data, data.length, serverAddress, serverPort); //this.serverPort
+                UDPsocket.send(UDPpacket);
+            } catch(Exception e) {
+                e.printStackTrace();
+                result = "f"; //Set task successful flag as failed
+            }
+            //Return the data to onPostExecute method
+            return result + commMsg;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... cmd) { //Do something with this?
+            commandStatusLabel.setText(getResources().getText(R.string.commandStatusBackGround));
+            //dispToast(cmd[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String backResult) {
+            super.onPostExecute(backResult);
+            if('f' == backResult.charAt(0)){
+                commandStatusLabel.setText((CharSequence) (backResult.substring(1) + " " + getResources().getText(R.string.commandStatusPostExecFail)));
+            } else {
+                commandStatusLabel.setText((CharSequence) (backResult.substring(1) + " " + getResources().getText(R.string.commandStatusPostExecPass)));
+            }
+            setEnableManualControls(prevEmergButtonState);
+        }
     }
 }

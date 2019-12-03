@@ -23,4 +23,10 @@
     <string name="timeExample">ex: 9:30AM</string>
     <string name="edit_schedule_order">Edit Schedule Order:</string>
     <string name="create">Create</string>
+    <string name="commandStatus">Command Status: </string>
+    <string name="commandStatusIdle">No Command Pending.</string>
+    <string name="commandStatusPreExec">Preparing to Send..</string>
+    <string name="commandStatusBackGround">Sending Command...</string>
+    <string name="commandStatusPostExecPass"> Command Successfully Sent!</string>
+    <string name="commandStatusPostExecFail"> Command failed to Send.</string>
 </resources>
