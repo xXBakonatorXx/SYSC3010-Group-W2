@@ -39,7 +39,7 @@ datastring = str(data)
 bytearr = bytearray(datastring, "utf-8")
 s.sendto(bytearr, server_address)
 
-s.shutdown(1)
+s.close()
 
 
     

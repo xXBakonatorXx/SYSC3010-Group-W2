@@ -5,7 +5,7 @@ import sqlite3
 import sys
 #from mock import recieveData
 from to_file import to_file
-from itertools import chain
+
 
 
 
@@ -40,7 +40,7 @@ def sql_to_json(table):
     
 #Insert a row from json file to sql database
 # This works for single rows, to make multiple, call it many times per entry in json dict  
-def insert_row(cmdList): #todo: change this from file to string 
+def insert_row(cmdList): 
     conn = sqlite3.connect('test3.sqlite')
     cursor = conn.cursor(); 
     #table name is just the first item of our list
@@ -50,11 +50,11 @@ def insert_row(cmdList): #todo: change this from file to string
     try:
         if (tablename == 'items'):
             cursor.execute("INSERT INTO {tablename} ({colid}, {colname}) VALUES ('{val1}', '{val2}')".\
-            format(tablename = 'items', colid = 'name', colname = 'location', val1 = cmdList[1], val2 = cmdList[2]))
+            format(tablename = 'items', colid = 'name', colname = 'location', val1 = cmdList[2], val2 = cmdList[4]))
             
         elif (tablename == 'locations'): 
             cursor.execute("INSERT INTO locations (name, PathA, PathB, PathC, PathD) VALUES ('{val1}', '{val2}', '{val3}', '{val4}', '{val5}')".\
-            format(val1 = cmdList[1], val2 = cmdList[2], val3 = cmdList[3], val4 = cmdList[4], val5 = cmdList[5]))
+            format(val1 = cmdList[2], val2 = cmdList[4], val3 = cmdList[6], val4 = cmdList[8], val5 = cmdList[10]))
     except: 
         print('Oops, something went wrong')
     finally: 
