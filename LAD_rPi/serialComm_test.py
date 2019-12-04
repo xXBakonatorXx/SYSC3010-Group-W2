@@ -4,7 +4,7 @@ Main LAD unit Raspberry Pi code.
 
 developed by:
         Zachary Porter      : 101069001
-        Erdem Yanikomeroglu : _________
+        Erdem Yanikomeroglu : 101080085
 
 Project Group : W2
 
