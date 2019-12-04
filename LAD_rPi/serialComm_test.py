@@ -369,10 +369,18 @@ if __name__ == "__main__":
                     print(path2item)
                 else:
                     # continue last command
-                    x = 0
+                    path2item = getPath(data)
+                    for i in path2item:
+                        nextLocation = path2item.pop
+                        #go there
+                        decode_arduino(cap, database, ser.write(0x010), nextLocation)
+                        path2home.push(nextLocation)
             else:
                 # return home
-                x = 0
+                for j in path2home:
+                    nextLocation = path2home.pop
+                    #go there
+                    decode_arduino(cap, database, ser.write(0x010), nextLocation)
 
         elif (type(data) == type(int())):
             # encode arduino command
