@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Define UI Elements:
     private Switch enableSw;
-    private Button btnS, btnF, btnB, btnWUp, btnWDown, btnWReset, btnAUp, btnADown, btnAReset, btnRunTask, btnClawT, btnClawR;
+    private Button btnS, btnF, btnB, btnWUp, btnWDown, btnWReset, btnAUp, btnADown, btnAReset, btnRunTask, btnClawT, btnClawR, btnR;
     private Spinner taskSpinner;
     private TextView commandStatusLabel;
     private String taskSearchKey;
@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         btnS = findViewById(R.id.btnStop);
         btnF = findViewById(R.id.btnForward);
         btnB = findViewById(R.id.btnTurnLeft);
+        btnR = findViewById(R.id.btnTurnRight);
         enableSw = findViewById(R.id.enableSwitch);
         commandStatusLabel = findViewById(R.id.commandStatusFieldText);
         btnWUp = findViewById(R.id.wristUpButton);
@@ -339,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
         btnClawR.setEnabled((changeTo));
         btnClawT.setEnabled((changeTo));
         btnClawT.setEnabled((changeTo));
+        btnR.setEnabled(changeTo);
     }
 
     /**
