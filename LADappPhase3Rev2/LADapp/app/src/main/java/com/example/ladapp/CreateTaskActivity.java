@@ -27,7 +27,6 @@ public class CreateTaskActivity extends AppCompatActivity implements CompoundBut
     private ToggleButton sunBtn, monBtn, tuesBtn, wedBtn, thursBtn, friBtn, satBtn;
     private Button cancelBtn, createBtn;
     private EditText tskName, tskTime;
-    private ListView dynamicTskList;
 
     //Define backend variables:
     private Integer newTaskDateBitMask;
@@ -59,7 +58,6 @@ public class CreateTaskActivity extends AppCompatActivity implements CompoundBut
         createBtn = findViewById(R.id.createButton);
         tskName = findViewById(R.id.taskNameBox);
         tskTime = findViewById(R.id.taskTimeBox);
-        dynamicTskList = findViewById(R.id.dynamicTaskLocList);
 
         //Hook up the ToggleButtons to the Listener
         sunBtn.setOnCheckedChangeListener(this);
@@ -109,9 +107,8 @@ public class CreateTaskActivity extends AppCompatActivity implements CompoundBut
      */
     @Override //Set up "Cancel" & "Create" button functionality
     public void onClick(View view) {
-        //if(v.getId() == R.id.cancelButton) finish(); //finish calls onDestroy() for current activity
         if(view.getId() == R.id.createButton) createNewScheduledTask();
-        finish();
+        finish(); //finish calls onDestroy() for current activity
     }
 
     public void createNewScheduledTask() {

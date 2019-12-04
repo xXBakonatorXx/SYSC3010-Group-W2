@@ -22,11 +22,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
+import static java.lang.Integer.toHexString;
 
 /**
  * MainActivity is the default Activity of the App.
@@ -43,32 +44,31 @@ public class MainActivity extends AppCompatActivity {
 
     //Define UI Elements:
     private Switch enableSw;
-    private Button btnS, btnF, btnB;
+    private Button btnS, btnF, btnB, btnWUp, btnWDown, btnWReset, btnAUp, btnADown, btnAReset, btnRunTask, btnClawT, btnClawR;
     private Spinner taskSpinner;
-    private RecyclerView itemList;
     private TextView commandStatusLabel;
-
-    //To get it to compile w/o implementing Adapter
-    private RecyclerView.Adapter itemLocAdapter;
-    private RecyclerView.LayoutManager layoutManager;
     private String taskSearchKey;
 
     //Save Emergency Button State before entering Asynctask thread:
     private boolean prevEmergButtonState;
 
     //Temporary Bogus Database data string arrays:
-    private static final String[] tasks1 = {"Pills", "Thermometer", "TV Remote", "Ipad",
+    private static final String[] tasks1 = {"cup_d0", "cup_b0", "cup_d1", "cup_b1",
             "Phone", "House Keys"};
     private static final String[] item1 = {"HOME", "Node A", "Living Room", "Node C",
             "Kitchen", "Office", "Corridor", "HOME"};
 
     //Define Manual Drive Command String Constants:
-    private final String fwdMsg = "manual:goForward";
-    private final String bckMsg = "manual:goBackward";
-    private final String stopMsg = "manual:stop";
-
-    //Temp Bogus Cursor:
-    //private Cursor databaseTasks, fetchTask;
+    private final String stopMsg = "0x000";
+    private final String fwdMsg = "0x100";
+    private final String turnLeftMsg = "0x080";
+    private final String turnRightMsg = "0x040";
+    private final String armUpMsg = "0x020";
+    private final String armDownMsg = "0x010";
+    private final String wristUpMsg = "0x008";
+    private final String wristDownMsg = "0x004";
+    private final String clawOpenMsg = "0x002";
+    private final String clawCloseMsg = "0x001";
 
     /**
      * Method onCreate is called upon the creation of MainActivity,
@@ -84,21 +84,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Initialize UI Elements:
+        //Initialize MainActivity UI Elements:
         btnS = findViewById(R.id.btnStop);
         btnF = findViewById(R.id.btnForward);
-        btnB = findViewById(R.id.btnBackward);
+        btnB = findViewById(R.id.btnTurnLeft);
         enableSw = findViewById(R.id.enableSwitch);
         commandStatusLabel = findViewById(R.id.commandStatusFieldText);
+        btnWUp = findViewById(R.id.wristUpButton);
+        btnWDown = findViewById(R.id.wristDownButton);
+        btnWReset = findViewById(R.id.resetWristPitchButton);
+        btnAUp = findViewById(R.id.raiseArmButton);
+        btnADown = findViewById(R.id.lowerArmButton);
+        btnAReset = findViewById(R.id.resetElevationButton);
+        btnRunTask = findViewById(R.id.runTaskNow);
+        btnClawT = findViewById(R.id.clawTButton);
+        btnClawR = findViewById(R.id.clawRButton);
+        taskSpinner = findViewById(R.id.itemList);
 
-        taskSpinner = findViewById(R.id.taskList);
-        itemList = findViewById(R.id.itemLocList);
-        itemList.setHasFixedSize(true); //Improves performance for constant layout sizes
-        //use a linear layout manager:
-        layoutManager = new LinearLayoutManager(this);
-        itemList.setLayoutManager(layoutManager);
-        //CursorAdapter taskAdapter = new CursorAdapter(this, databaseTasks, true);
-        //CursorAdapter itemLocAdapter = new CursorAdapter(this, fetchTask, true);
+        //Presently set reset buttons as Disabled no existing resetopcode
+
 
         //Handle if either database tables are empty:
         if(tasks1.length==0)tasks1[0]="No Items";
@@ -106,11 +110,8 @@ public class MainActivity extends AppCompatActivity {
         //Create ArrayAdapters as temp substitutes for CursorAdapter:
         ArrayAdapter<String> taskAdapter = new ArrayAdapter<String>(this,
                 R.layout.support_simple_spinner_dropdown_item, tasks1);
-        //RecyclerView.Adapter itemLocAdapter = new RecyclerView.Adapter //Likely req. its own class
-        //extension to implement this way. Maybe CursorAdapter will work w/o its own class ext?
         taskAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         taskSpinner.setAdapter(taskAdapter);
-        itemList.setAdapter(itemLocAdapter);
         taskSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                //After no selection is made, close drop down menu???
+                taskSearchKey = null;
             }
         });
 
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         });
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        FloatingActionButton fab = findViewById(R.id.newItemButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -176,16 +177,6 @@ public class MainActivity extends AppCompatActivity {
         Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
         toast.show(); //Display the exception msg
-    }
-
-    /**
-     * Method setupBT is called to set up Bluetooth
-     * functionality & connection on the User's phone.
-     *
-     * @throws IOException the Exception Object thrown due to
-     *                     a Bluetooth Network error.
-     */
-    public void setupBT() throws IOException{
     }
 
     /**
@@ -219,20 +210,58 @@ public class MainActivity extends AppCompatActivity {
         //dispToast(fwdMsg);
     }
 
-    /**
-     *Method driveBackward is called upon the User tapping
-     * or holding the "Backward" drive button on the UI.
-     * This will send the "Drive Backward" command to the
-     * LAD Unit Via the Central Server.
-     * @param view the Button View Object corresponding to
-     *             the "BACKWARD" UI Button.
-     * @throws IOException the Exception Object thrown due
-     *                     to a network error.
-     */
-    public void driveBackward(View view) throws IOException {
-        //Send the drive backwards command to the server.
-        sendCommand(bckMsg);
-        //dispToast(bckMsg);
+    public void runTaskNow(View view) throws IOException {  //////////////////////
+        //Send the drive forwards command to the server.
+        sendCommand(taskSearchKey);
+        //dispToast(fwdMsg);
+    }
+
+    public void driveLeft(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(turnLeftMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void driveRight(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(turnRightMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void moveUpArm(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(armUpMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void moveDownArm(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(armDownMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void moveWristUp(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(wristUpMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void moveWristDown(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(wristDownMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void openClaw(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(clawOpenMsg);
+        //dispToast(fwdMsg);
+    }
+
+    public void closeClaw(View view) throws IOException {
+        //Send the drive forwards command to the server.
+        sendCommand(clawCloseMsg);
+        //dispToast(fwdMsg);
     }
 
     /**
@@ -258,12 +287,12 @@ public class MainActivity extends AppCompatActivity {
      * @throws IOException the Exception Object thrown
      *                     due to a network error.
      */
-    public void fetchItem(String item) throws IOException{ //Implements IOException?
+    /**public void fetchItem(String item) throws IOException{ //Implements IOException?
         //Send fetch command to the LAD
         String fetchMsg = "item:" + item;
         sendCommand(fetchMsg);
         //dispToast(fetchMsg);
-    }
+    }*/
 
     /**
      * Method sendCommand takes the text or
@@ -277,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
     public void sendCommand(String msg) throws IOException{
         try {
             //Attempt sending the given command:
+            dispToast(msg);
             new NetworkingAsyncTask().execute(msg);
             //Set the command status back to Idle message:
             commandStatusLabel.setText(getResources().getText(R.string.commandStatusIdle));
@@ -295,10 +325,20 @@ public class MainActivity extends AppCompatActivity {
      *                 Control Buttons to.
      */
     public void setEnableManualControls(Boolean changeTo){
-        //Enables all 3 Control UI Buttons
+        //Enables all Control UI Buttons
         btnB.setEnabled(changeTo);
         btnF.setEnabled(changeTo);
         btnS.setEnabled(changeTo);
+        //Other UI Elements:
+        btnADown.setEnabled((changeTo));
+        btnAReset.setEnabled((changeTo));
+        btnAUp.setEnabled((changeTo));
+        btnWDown.setEnabled((changeTo));
+        btnWReset.setEnabled((changeTo));
+        btnWUp.setEnabled((changeTo));
+        btnClawR.setEnabled((changeTo));
+        btnClawT.setEnabled((changeTo));
+        btnClawT.setEnabled((changeTo));
     }
 
     /**
@@ -351,11 +391,8 @@ public class MainActivity extends AppCompatActivity {
         private DatagramPacket UDPpacket;
 
         //Define Network Parameters:
-        //private int serverPort = 510;
         private final int serverPort = 8888;
-        //private final int PACKETSIZE = 100;
-        //private final String serverIP = "192.168.0.46";
-        private final String serverIP = "192.168.43.110";
+        private final String serverIP = "192.168.31.126";
         private InetAddress serverAddress;
         private byte [] data;
         private String commMsg, result;
@@ -372,27 +409,26 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... param) {
             //Show the user this new status
             commMsg = param[0]; //Assuming this is how you get the sendCommand Input
-            result = "p"; //Init the result from Asynctask
+            result = "s"; //Init the result from Asynctask
             try { //Ported over from method sendCommand
                 //Set server IP
                 serverAddress = InetAddress.getByName(serverIP);
                 UDPsocket = new DatagramSocket();
                 data = commMsg.getBytes();
-                UDPpacket = new DatagramPacket(data, data.length, serverAddress, serverPort); //this.serverPort
+                UDPpacket = new DatagramPacket(this.data, data.length, serverAddress, this.serverPort); //this.serverPort
                 UDPsocket.send(UDPpacket);
             } catch(Exception e) {
                 e.printStackTrace();
                 result = "f"; //Set task successful flag as failed
-            }
-            //Return the data to onPostExecute method
+            } //Return the data to onPostExecute method
             return result + commMsg;
         }
 
-        @Override
-        protected void onProgressUpdate(String... cmd) { //Do something with this?
-            commandStatusLabel.setText(getResources().getText(R.string.commandStatusBackGround));
-            //dispToast(cmd[0]);
-        }
+        //@Override //"method does not override its superclass"
+        //protected void onProgressUpdate() { //Do something with this?
+            //commandStatusLabel.setText(getResources().getText(R.string.commandStatusBackGround));
+            //dispToast(UDPpacket.getAddress().toString());
+        //}
 
         @Override
         protected void onPostExecute(String backResult) {

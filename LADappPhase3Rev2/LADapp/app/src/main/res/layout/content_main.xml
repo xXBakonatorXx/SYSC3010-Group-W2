@@ -9,8 +9,119 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <Button
+        android:id="@+id/clawRButton"
+        android:layout_width="107dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:backgroundTint="#2196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="openClaw"
+        android:text="@string/release"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/lowerArmButton"
+        app:layout_constraintTop_toTopOf="@+id/clawTButton" />
+
+    <Button
+        android:id="@+id/clawTButton"
+        android:layout_width="107dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="5dp"
+        android:backgroundTint="#2196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="closeClaw"
+        android:text="@string/tighten"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clawControlLabel" />
+
+    <Button
+        android:id="@+id/btnTurnRight"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="#662196F3"
+        android:backgroundTintMode="src_atop"
+        android:foreground="@android:drawable/ic_media_ff"
+        android:onClick="driveRight"
+        android:tooltipText="Turn right at intersections only."
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/btnStop"
+        app:layout_constraintStart_toEndOf="@+id/btnForward"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/runTaskNow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#BA68C8"
+        android:hapticFeedbackEnabled="true"
+        android:onClick="runTaskNow"
+        android:text="@string/run_task_now"
+        android:tooltipText="Preempts all scheduled items with the selected item."
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/itemList"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/itemList"
+        app:layout_constraintTop_toTopOf="@+id/itemList" />
+
+    <Button
+        android:id="@+id/wristDownButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#DC2196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="moveWristDown"
+        android:text="@string/minus1"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/lowerArmButton"
+        app:layout_constraintTop_toTopOf="@+id/wristUpButton" />
+
+    <TextView
+        android:id="@+id/wristControlLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:text="@string/wrist_articulation"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/motorControlLabel"
+        app:layout_constraintTop_toBottomOf="@+id/raiseArmButton" />
+
+    <TextView
+        android:id="@+id/clawControlLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:text="@string/claw_control"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/motorControlLabel"
+        app:layout_constraintTop_toBottomOf="@+id/wristUpButton" />
+
+    <Button
+        android:id="@+id/wristUpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="5dp"
+        android:backgroundTint="#DC2196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="moveWristUp"
+        android:text="@string/_1"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wristControlLabel" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
+        android:id="@+id/newItemButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -30,44 +141,98 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
         android:layout_marginEnd="28dp"
-        android:backgroundTint="#AEF44336"
+        android:backgroundTint="#FF1744"
         android:hapticFeedbackEnabled="true"
-        android:text="@string/button_stop"
+        android:text="@string/emergency_stop"
         android:tooltipText="Sends the LAD an Emergency stop command. NOTE: Manual Drive is set to disabled after use."
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
+        android:id="@+id/resetElevationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="28dp"
+        android:backgroundTint="#FF9800"
+        android:hapticFeedbackEnabled="true"
+        android:text="@string/reset_elevation"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/btnStop"
+        app:layout_constraintTop_toTopOf="@+id/lowerArmButton" />
+
+    <Button
+        android:id="@+id/resetWristPitchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="28dp"
+        android:backgroundTint="#FF9800"
+        android:hapticFeedbackEnabled="true"
+        android:text="@string/reset_wrrist_position"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/btnStop"
+        app:layout_constraintTop_toTopOf="@+id/wristDownButton" />
+
+    <Button
         android:id="@+id/btnForward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
         android:layout_marginTop="64dp"
+        android:layout_marginEnd="66dp"
         android:backgroundTint="#662196F3"
         android:backgroundTintMode="src_atop"
         android:onClick="driveForward"
         android:text="@string/button_forward"
         android:tooltipText="Onwards to Victory!"
         android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnStop"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btnBackward"
+        android:id="@+id/raiseArmButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="5dp"
+        android:backgroundTint="#A12196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="moveUpArm"
+        android:text="@string/_10"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/armControlsLabel" />
+
+    <Button
+        android:id="@+id/btnTurnLeft"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
         android:backgroundTint="#662196F3"
         android:backgroundTintMode="src_atop"
-        android:onClick="driveBackward"
-        android:text="@string/button_backward"
-        android:tooltipText="Driver, FULL REVERSE!"
+        android:foreground="@android:drawable/ic_media_rew"
+        android:foregroundTint="#FFFFFF"
+        android:onClick="driveLeft"
+        android:tooltipText="Turn left at intersections only."
         android:visibility="visible"
-        app:layout_constraintEnd_toStartOf="@+id/btnStop"
-        app:layout_constraintHorizontal_bias="0.529"
-        app:layout_constraintStart_toEndOf="@+id/btnForward"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btnForward" />
+
+    <Button
+        android:id="@+id/lowerArmButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="#A12196F3"
+        android:backgroundTintMode="src_atop"
+        android:onClick="moveDownArm"
+        android:text="@string/minus10"
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/resetElevationButton"
+        app:layout_constraintStart_toEndOf="@+id/raiseArmButton"
+        app:layout_constraintTop_toTopOf="@+id/raiseArmButton" />
 
     <Switch
         android:id="@+id/enableSwitch"
@@ -105,19 +270,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="156dp"
+        android:layout_marginTop="32dp"
         android:clickable="false"
         android:text="@string/scheduled_tasks"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/cmdStatusLabel" />
 
     <Spinner
-        android:id="@+id/taskList"
+        android:id="@+id/itemList"
         android:layout_width="201dp"
         android:layout_height="33dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"
@@ -125,32 +289,11 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/wristUpButton"
         app:layout_constraintTop_toBottomOf="@+id/tasksLabel" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/itemLocList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="?attr/panelBackground"
-        android:backgroundTint="#1D000000"
-        android:layoutMode="clipBounds"
-        android:longClickable="true"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:scrollbars="vertical"
-        android:tooltipText="Lists the locations that the LAD will visit on its line to complete the selected task."
-        android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/floatingActionButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/taskList" />
-
     <TextView
-        android:id="@+id/newSchedTaskText"
+        android:id="@+id/newSchedTaskLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -160,13 +303,13 @@
         android:textStyle="bold"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/floatingActionButton" />
+        app:layout_constraintEnd_toStartOf="@+id/newItemButton" />
 
     <TextView
-        android:id="@+id/cmdStatusText"
+        android:id="@+id/cmdStatusLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
         android:clickable="false"
         android:text="@string/commandStatus"
@@ -174,6 +317,33 @@
         android:textStyle="bold"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clawTButton" />
+
+    <TextView
+        android:id="@+id/motorControlLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:text="@string/line_traversal_controls"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/manualLabel" />
+
+    <TextView
+        android:id="@+id/armControlsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clickable="false"
+        android:text="@string/arm_manipulation"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/motorControlLabel"
         app:layout_constraintTop_toBottomOf="@+id/btnForward" />
 
     <TextView
@@ -181,11 +351,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:clickable="false"
         android:textStyle="normal"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@+id/cmdStatusText"
-        app:layout_constraintTop_toBottomOf="@+id/btnBackward" />
+        app:layout_constraintStart_toEndOf="@+id/cmdStatusLabel"
+        app:layout_constraintTop_toTopOf="@+id/cmdStatusLabel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

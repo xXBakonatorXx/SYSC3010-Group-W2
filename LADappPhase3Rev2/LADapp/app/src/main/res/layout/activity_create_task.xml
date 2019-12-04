@@ -20,6 +20,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/pickupItemLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/pickup"
+        android:textSize="14sp"
+        android:textStyle="normal|bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scheduleNameLabel" />
+
+    <TextView
         android:id="@+id/onDateLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,12 +46,12 @@
         app:layout_constraintTop_toBottomOf="@+id/taskNameBox" />
 
     <TextView
-        android:id="@+id/editScheduleLabel"
+        android:id="@+id/fromLOcationLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="@string/edit_schedule_order"
+        android:text="@string/from"
         android:textSize="18sp"
         android:textStyle="bold"
         android:visibility="visible"
@@ -63,7 +76,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="32dp"
         android:backgroundTint="?attr/editTextColor"
         android:backgroundTintMode="src_atop"
         android:ems="10"
@@ -260,15 +273,20 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="#28686868"
         android:backgroundTintMode="src_over"
         android:scrollbars="vertical"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/createButton"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/possibleList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/list_of_existing_locations_go_here"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editScheduleLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/fromLOcationLabel" />
 </androidx.constraintlayout.widget.ConstraintLayout>
